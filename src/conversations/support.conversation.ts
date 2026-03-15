@@ -63,9 +63,10 @@ export async function supportConversation(
     const userTag = incoming.from?.username
       ? `@${incoming.from.username}`
       : "без @ника";
+    const userId = incoming.from?.id ?? 0;
     const userChatId = incoming.chat?.id;
 
-    const adminText = `${SUPPORT_ADMIN_HEADER(userName, userTag)}\n${text}`;
+    const adminText = `${SUPPORT_ADMIN_HEADER(userName, userTag, userId)}\n${text}`;
 
     try {
       const sent = await incoming.api.sendMessage(chatId, adminText, {

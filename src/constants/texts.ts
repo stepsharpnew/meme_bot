@@ -1,18 +1,16 @@
-export const MAIN_MENU_TEXT =
-  "🎉 Добро пожаловать в MemeVpn — VPN для тех, кто устал страдать!";
+export const MAIN_MENU_TEXT = `🎉 Добро пожаловать в MemeVpn!
+
+🚀 Здесь ты можешь:
+• Подключить VPN за пару минут
+• Написать в поддержку, если что-то пошло не так
+• Посмотреть инструкции по подключению
+
+Выбирай, что нужно 👇`;
 
 export const INSTRUCTIONS_MENU_TEXT = "📱 Выбери своё железо, страдалец:";
 
-export const HELP_TEXT = `🤔 MemeVpn — это что вообще?
-
-Это бот-помощник для настройки AmneziaWG VPN.
-Здесь ты найдёшь инструкции для всех платформ,
-можешь написать в поддержку и оформить VIP.
-
-Бот сделан с 💙 и болью разработчика.`;
-
 export const SUPPORT_PROMPT_TEXT =
-  "📝 Ты в режиме чата с поддержкой.\nПиши сообщения — шаманы получат каждое.\nЧтобы выйти, жми кнопку внизу 👇";
+  "📝 Ты в режиме чата с поддержкой.\nПиши сообщения — менеджеры получат каждое.\nЧтобы выйти, жми кнопку внизу 👇";
 
 export const SUPPORT_FORWARDED_TEXTS = [
   "✅ Передано шаманам 🔮",
@@ -22,55 +20,59 @@ export const SUPPORT_FORWARDED_TEXTS = [
 ] as const;
 
 export const SUPPORT_EXITED_TEXT =
-  "👋 Диалог с поддержкой завершён. Если шаманы ответят — ты получишь сообщение.";
+  "👋 Диалог с поддержкой завершён. Если менеджер ответит — ты получишь сообщение.";
 
 export const SUPPORT_EXIT_BUTTON = "❌ Завершить диалог";
 
 export const SUPPORT_SEND_ERROR_TEXT =
-  "⚠️ Не удалось отправить сообщение шаманам. Попробуй позже или жми /start.";
+  "⚠️ Не удалось отправить сообщение. Попробуй позже или жми /start.";
 
 export const SUPPORT_ADMIN_HEADER = (
   userName: string,
   userTag: string,
+  userId: number,
 ): string =>
-  `📨 Обращение в поддержку\n\n👤 От: ${userName}\n🔖 Ник: ${userTag}\n\n📝 Сообщение:`;
+  `📨 Обращение в поддержку\n\n👤 От: ${userName}\n🔖 Ник: ${userTag}\n🆔 ID: ${userId}\n\n📝 Сообщение:`;
 
-export const SUPPORT_REPLY_PREFIX = "📨 Ответ от поддержки:\n\n";
+export const SUPPORT_REPLY_PREFIX = "📨 Ответ от менеджера:\n\n";
 
 export const SUPPORT_REPLY_FAILED =
   "⚠️ Не удалось отправить ответ — возможно, пользователь заблокировал бота.";
 
 export const VIP_TEXT = (
   priceRub: string,
-): string => `💎 VIP — для тех, кто хочет интернет без боли
+): string => `💎 Подключение MemeVpn
 
-✅ Что получишь:
+━━━━━━━━━━━━━━━━━━
 
-Скорость как у богов
+🔥 Что входит в подписку:
 
-Безлимит на страдания (в хорошем смысле)
+  ⚡ Высокая скорость без ограничений
+  🌍 Доступ к заблокированным сервисам
+  🛡️ Приоритетная поддержка менеджера
+  🔑 Персональный конфиг
 
-Приоритетная поддержка шаманов
+━━━━━━━━━━━━━━━━━━
 
-Эксклюзивные конфиги
+💰 Стоимость: ${priceRub} ₽/мес
 
-💰 Цена: ${priceRub} руб/мес`;
+Нажми кнопку ниже, чтобы оставить заявку 👇`;
 
 export const VIP_REQUEST_ADMIN_TEXT = (
   userName: string,
   userTag: string,
-): string => `💎 Новая заявка на VIP
+  userId: number,
+): string => `💎 Новая заявка на подключение
 
 👤 От: ${userName}
 🔖 Ник: ${userTag}
-
-Хочу VIP и интернет без страданий!`;
+🆔 ID: ${userId}`;
 
 export const VIP_REQUEST_SENT_TEXT =
-  "✅ Заявка на VIP улетела админам. Скоро напишут с деталями.";
+  "✅ Заявка отправлена! Менеджер скоро свяжется с тобой.";
 
 export const VIP_REQUEST_FAILED_TEXT =
-  "⚠️ Не смог отправить VIP-заявку. Попробуй позже или пни поддержку.";
+  "⚠️ Не смог отправить заявку. Попробуй позже или напиши в поддержку.";
 
 export const PLATFORM_TEXTS = {
   android: `🤖 Android | Быстрый гайд без боли
@@ -121,10 +123,9 @@ export const PLATFORM_TEXTS = {
 } as const;
 
 export const BUTTON_TEXTS = {
-  instructions: "📖 Как подключить",
-  support: "🆘 Нужна помощь",
-  vip: "💎 Стать випом",
-  help: "🤔 Что это?",
+  instructions: "📖 Инструкция",
+  support: "🆘 Поддержка",
+  vip: "🔌 Подключиться",
   android: "🤖 Android",
   ios: "🍎 iPhone (дорогой)",
   windows: "🪟 Windows",
@@ -133,9 +134,7 @@ export const BUTTON_TEXTS = {
   backToMain: "⬅️ Назад в главное",
   backToPlatforms: "⬅️ Назад к платформам",
   home: "🏠 Домой",
-  buyVip: "🛒 Хочу VIP",
+  buyVip: "🛒 Оставить заявку",
   back: "⬅️ Назад",
-  guide: "▶️ Видос-гайд",
   cancel: "❌ Передумал",
-  homeFromHelp: "🏠 Понятно, домой",
 } as const;

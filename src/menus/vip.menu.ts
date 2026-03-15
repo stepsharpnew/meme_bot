@@ -23,12 +23,13 @@ export const vipMenu = new Menu<MemeContext>(VIP_MENU_ID)
     const { chatId, topicId } = resolveAdminChat(rawBuyChat);
     const userName = ctx.from?.first_name ?? "Аноним";
     const userTag = ctx.from?.username ? `@${ctx.from.username}` : "без @ника";
+    const userId = ctx.from?.id ?? 0;
     const userChatId = ctx.chat?.id;
 
     try {
       const sent = await ctx.api.sendMessage(
         chatId,
-        VIP_REQUEST_ADMIN_TEXT(userName, userTag),
+        VIP_REQUEST_ADMIN_TEXT(userName, userTag, userId),
         {
           ...(topicId !== undefined ? { message_thread_id: topicId } : {}),
         },
