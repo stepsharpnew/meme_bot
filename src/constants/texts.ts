@@ -13,13 +13,16 @@ export const HELP_TEXT = `🤔 MemeVpn — это что вообще?
 Бот сделан с 💙 и болью разработчика.`;
 
 export const SUPPORT_PROMPT_TEXT =
-  "📝 Опиши свою боль (напиши сообщение, и я передам его нашим шаманам):";
+  "📝 Ты в режиме чата с поддержкой.\nПиши сообщения — шаманы получат каждое.\nЧтобы выйти, жми кнопку внизу 👇";
 
-export const SUPPORT_SENT_TEXT =
-  "✅ Сообщение отправлено! Шаманы уже смотрят в хрустальный шар 🔮";
+export const SUPPORT_FORWARDED_TEXT =
+  "✅ Передано шаманам 🔮";
 
-export const SUPPORT_CANCELLED_TEXT =
-  "❌ Окей, тревогу отменили. Возвращаю тебя на базу.";
+export const SUPPORT_EXITED_TEXT =
+  "👋 Диалог с поддержкой завершён. Если шаманы ответят — ты получишь сообщение.";
+
+export const SUPPORT_EXIT_BUTTON =
+  "❌ Завершить диалог";
 
 export const SUPPORT_SEND_ERROR_TEXT =
   "⚠️ Не удалось отправить сообщение шаманам. Попробуй позже или жми /start.";
