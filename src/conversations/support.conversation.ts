@@ -4,7 +4,7 @@ import {
   SUPPORT_ADMIN_HEADER,
   SUPPORT_EXIT_BUTTON,
   SUPPORT_EXITED_TEXT,
-  SUPPORT_FORWARDED_TEXT,
+  SUPPORT_FORWARDED_TEXTS,
   SUPPORT_PROMPT_TEXT,
   SUPPORT_SEND_ERROR_TEXT
 } from "../constants/texts";
@@ -12,6 +12,11 @@ import { resolveAdminChat, saveForwardedMessage } from "../store";
 import { type MemeContext } from "../types";
 
 export const BACK_TO_MAIN_DATA = "back_to_main";
+
+function randomSupportAck(): string {
+  const idx = Math.floor(Math.random() * SUPPORT_FORWARDED_TEXTS.length);
+  return SUPPORT_FORWARDED_TEXTS[idx];
+}
 
 function backToMainKeyboard(): InlineKeyboard {
   return new InlineKeyboard().text("🏠 Вернуться в меню", BACK_TO_MAIN_DATA);
@@ -55,10 +60,12 @@ export async function supportConversation(
 
     const { chatId, topicId } = resolveAdminChat(adminChatIdRaw);
     const userName = incoming.from?.first_name ?? "Аноним";
-    const userId = incoming.from?.id ?? 0;
+    const userTag = incoming.from?.username
+      ? `@${incoming.from.username}`
+      : "без @ника";
     const userChatId = incoming.chat?.id;
 
-    const adminText = `${SUPPORT_ADMIN_HEADER(userName, userId)}\n${text}`;
+    const adminText = `${SUPPORT_ADMIN_HEADER(userName, userTag)}\n${text}`;
 
     try {
       const sent = await incoming.api.sendMessage(chatId, adminText, {
@@ -76,6 +83,6 @@ export async function supportConversation(
       continue;
     }
 
-    await incoming.reply(SUPPORT_FORWARDED_TEXT);
+    await incoming.reply(randomSupportAck());
   }
 }

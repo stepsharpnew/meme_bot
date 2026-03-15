@@ -4,7 +4,6 @@ import { Bot, GrammyError, session } from "grammy";
 import { BACK_TO_MAIN_DATA, supportConversation } from "./conversations/support.conversation";
 import {
   MAIN_MENU_TEXT,
-  SUPPORT_ADMIN_REPLY_SENT,
   SUPPORT_REPLY_FAILED,
   SUPPORT_REPLY_PREFIX
 } from "./constants/texts";
@@ -69,7 +68,6 @@ if (adminChatRaw) {
 
     try {
       await ctx.api.sendMessage(userChatId, `${SUPPORT_REPLY_PREFIX}${ctx.message.text}`);
-      await ctx.reply(SUPPORT_ADMIN_REPLY_SENT);
     } catch (error) {
       console.error("Ошибка отправки ответа юзеру:", error);
       await ctx.reply(SUPPORT_REPLY_FAILED);

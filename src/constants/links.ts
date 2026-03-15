@@ -1,7 +1,7 @@
 export const PLATFORM_DOWNLOAD_LINKS = {
   android: "https://play.google.com/store/apps/details?id=org.amnezia.awg",
   ios: "https://apps.apple.com/us/app/amneziawg/id6478942365",
-  windows: "https://github.com/amnezia-vpn/amnezia-client/releases",
+  windows: "https://github.com/amnezia-vpn/amneziawg-windows-client/releases",
   macos: "https://github.com/amnezia-vpn/amnezia-client/releases",
   linux: "https://github.com/amnezia-vpn/amnezia-client/releases",
 } as const;
