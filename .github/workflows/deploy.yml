@@ -1,0 +1,65 @@
+name: CI/CD for MemeVpn Bot
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout кода
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Настройка Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # 3. Установка зависимостей
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. Проверка TypeScript (strict build)
+      - name: TypeScript check
+        run: npm run build
+
+      # 5. Настройка SSH
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+      # 6. Копирование файлов на сервер
+      - name: Deploy files to server
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_IP_ADDRESS }} \
+            "mkdir -p ~/meme_bot/bot"
+          rsync -avz \
+            --exclude=".git" \
+            --exclude="node_modules" \
+            --exclude=".env" \
+            ./ ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_IP_ADDRESS }}:~/meme_bot/bot
+
+      # 7. Создаём .env на сервере из секретов GitHub
+      - name: Create .env on server
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_IP_ADDRESS }} \
+            "echo '${{ secrets.BOT_ENV }}' > ~/meme_bot/bot/.env"
+
+      # 8. Установка зависимостей и перезапуск бота на сервере
+      - name: Restart bot on server
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_IP_ADDRESS }} << 'EOF'
+            cd ~/meme_bot/bot
+            npm ci --omit=dev
+            npm install -g ts-node typescript pm2 2>/dev/null || true
+            pm2 stop meme-bot 2>/dev/null || true
+            pm2 start "npx ts-node src/index.ts" --name meme-bot --restart-delay=3000
+            pm2 save
+          EOF
