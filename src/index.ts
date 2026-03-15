@@ -43,13 +43,19 @@ bot.command("start", async (ctx) => {
   await ctx.reply(MAIN_MENU_TEXT, { reply_markup: mainMenu });
 });
 
-// Livegram-стиль: ответ админа на сообщение в группе → пересылка юзеру.
-const adminChatRaw = process.env.ADMIN_CHAT_ID ?? "";
-if (adminChatRaw) {
-  const adminChat = resolveAdminChat(adminChatRaw);
+// Livegram-стиль: ответы из чатов поддержки/VIP возвращаются пользователю.
+const supportAdminChatRaw = process.env.ADMIN_CHAT_ID_SUPPORT ?? "";
+const vipAdminChatRaw = process.env.ADMIN_CHAT_ID_BUY ?? "";
+const adminChats = [supportAdminChatRaw, vipAdminChatRaw]
+  .filter((value) => value.length > 0)
+  .map((value) => resolveAdminChat(value));
 
+if (adminChats.length > 0) {
   bot.on("message", async (ctx, next) => {
-    if (ctx.chat.id.toString() !== adminChat.chatId) {
+    const currentAdminChat = adminChats.find(
+      (adminChat) => ctx.chat.id.toString() === adminChat.chatId,
+    );
+    if (!currentAdminChat) {
       await next();
       return;
     }
@@ -60,7 +66,7 @@ if (adminChatRaw) {
       return;
     }
 
-    const userChatId = getUserChatId(repliedTo.message_id);
+    const userChatId = getUserChatId(currentAdminChat.chatId, repliedTo.message_id);
     if (!userChatId) {
       await next();
       return;

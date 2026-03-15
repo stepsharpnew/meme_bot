@@ -52,7 +52,7 @@ export async function supportConversation(
     }
 
     // Пробрасываем сообщение в админ-чат.
-    const adminChatIdRaw = process.env.ADMIN_CHAT_ID;
+    const adminChatIdRaw = process.env.ADMIN_CHAT_ID_SUPPORT;
     if (!adminChatIdRaw) {
       await incoming.reply(SUPPORT_SEND_ERROR_TEXT);
       continue;
@@ -74,7 +74,7 @@ export async function supportConversation(
 
       if (userChatId) {
         await conversation.external(() => {
-          saveForwardedMessage(sent.message_id, userChatId);
+          saveForwardedMessage(chatId, sent.message_id, userChatId);
         });
       }
     } catch (error) {

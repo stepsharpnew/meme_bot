@@ -56,6 +56,22 @@ export const VIP_TEXT = (
 
 💰 Цена: ${priceRub} руб/мес`;
 
+export const VIP_REQUEST_ADMIN_TEXT = (
+  userName: string,
+  userTag: string,
+): string => `💎 Новая заявка на VIP
+
+👤 От: ${userName}
+🔖 Ник: ${userTag}
+
+Хочу VIP и интернет без страданий!`;
+
+export const VIP_REQUEST_SENT_TEXT =
+  "✅ Заявка на VIP улетела админам. Скоро напишут с деталями.";
+
+export const VIP_REQUEST_FAILED_TEXT =
+  "⚠️ Не смог отправить VIP-заявку. Попробуй позже или пни поддержку.";
+
 export const PLATFORM_TEXTS = {
   android: `🤖 Android | Быстрый гайд без боли
 
@@ -117,7 +133,7 @@ export const BUTTON_TEXTS = {
   backToMain: "⬅️ Назад в главное",
   backToPlatforms: "⬅️ Назад к платформам",
   home: "🏠 Домой",
-  buyVip: "🛒 Купить и перестать страдать",
+  buyVip: "🛒 Хочу VIP",
   back: "⬅️ Назад",
   guide: "▶️ Видос-гайд",
   cancel: "❌ Передумал",
