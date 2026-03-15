@@ -71,7 +71,7 @@ jobs:
             export PATH="$PATH:/usr/bin:/usr/local/bin"
             cd ~/meme_bot/bot
 
-            npm ci --omit=dev
+            npm ci
 
             # Глобальная установка pm2, ts-node, typescript если нет
             if ! command -v pm2 &>/dev/null; then
