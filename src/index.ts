@@ -61,7 +61,7 @@ if (adminChats.length > 0) {
     }
 
     const repliedTo = ctx.message.reply_to_message;
-    if (!repliedTo || !ctx.message.text) {
+    if (!repliedTo) {
       await next();
       return;
     }
@@ -73,7 +73,12 @@ if (adminChats.length > 0) {
     }
 
     try {
-      await ctx.api.sendMessage(userChatId, `${SUPPORT_REPLY_PREFIX}${ctx.message.text}`);
+      if (ctx.message.text) {
+        await ctx.api.sendMessage(userChatId, `${SUPPORT_REPLY_PREFIX}${ctx.message.text}`);
+      } else {
+        await ctx.api.sendMessage(userChatId, SUPPORT_REPLY_PREFIX);
+        await ctx.api.copyMessage(userChatId, ctx.chat.id, ctx.message.message_id);
+      }
     } catch (error) {
       console.error("Ошибка отправки ответа юзеру:", error);
       await ctx.reply(SUPPORT_REPLY_FAILED);
