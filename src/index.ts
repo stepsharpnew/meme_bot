@@ -4,11 +4,19 @@ import { Bot, GrammyError, session } from "grammy";
 import { BACK_TO_MAIN_DATA, supportConversation } from "./conversations/support.conversation";
 import {
   MAIN_MENU_TEXT,
+  SUPPORT_ADMIN_HEADER,
   SUPPORT_REPLY_FAILED,
   SUPPORT_REPLY_PREFIX
 } from "./constants/texts";
 import { mainMenu } from "./menus/main.menu";
-import { getUserChatId, resolveAdminChat } from "./store";
+import {
+  clearActiveDialog,
+  getActiveDialog,
+  getUserChatId,
+  resolveAdminChat,
+  saveForwardedMessage,
+  setActiveDialog
+} from "./store";
 import { type MemeContext, type SessionData } from "./types";
 
 const botToken = process.env.BOT_TOKEN;
@@ -38,22 +46,26 @@ bot.callbackQuery(BACK_TO_MAIN_DATA, async (ctx) => {
   await ctx.editMessageText(MAIN_MENU_TEXT, { reply_markup: mainMenu });
 });
 
-// Команда старта открывает главное меню MemeVpn.
+// /start — открывает главное меню и сбрасывает активный диалог.
 bot.command("start", async (ctx) => {
+  if (ctx.chat) {
+    clearActiveDialog(ctx.chat.id);
+  }
   await ctx.reply(MAIN_MENU_TEXT, { reply_markup: mainMenu });
 });
 
-// Livegram-стиль: ответы из чатов поддержки/VIP возвращаются пользователю.
+// --- Админ-чаты ---
 const supportAdminChatRaw = process.env.ADMIN_CHAT_ID_SUPPORT ?? "";
 const vipAdminChatRaw = process.env.ADMIN_CHAT_ID_BUY ?? "";
 const adminChats = [supportAdminChatRaw, vipAdminChatRaw]
   .filter((value) => value.length > 0)
   .map((value) => resolveAdminChat(value));
 
+// Админ → юзер: ответ на пересланное сообщение уходит пользователю.
 if (adminChats.length > 0) {
   bot.on("message", async (ctx, next) => {
     const currentAdminChat = adminChats.find(
-      (adminChat) => ctx.chat.id.toString() === adminChat.chatId,
+      (ac) => ctx.chat.id.toString() === ac.chatId,
     );
     if (!currentAdminChat) {
       await next();
@@ -72,10 +84,15 @@ if (adminChats.length > 0) {
       return;
     }
 
+    // Открываем активный диалог: юзер сможет свободно отвечать обратно.
+    setActiveDialog(userChatId, currentAdminChat);
+
     try {
       if (ctx.message.text) {
-        await ctx.api.sendMessage(userChatId, `${SUPPORT_REPLY_PREFIX}${ctx.message.text}`);
+        // Текст — без префикса, как обычный чат.
+        await ctx.api.sendMessage(userChatId, ctx.message.text);
       } else {
+        // Медиа (QR, конфиг, фото) — с пометкой от менеджера.
         await ctx.api.sendMessage(userChatId, SUPPORT_REPLY_PREFIX);
         await ctx.api.copyMessage(userChatId, ctx.chat.id, ctx.message.message_id);
       }
@@ -85,6 +102,47 @@ if (adminChats.length > 0) {
     }
   });
 }
+
+// Юзер → админ: свободный ответ, если есть активный диалог (VIP-оплата и т.д.)
+bot.on("message", async (ctx) => {
+  const userChatId = ctx.chat.id;
+  const dialog = getActiveDialog(userChatId);
+  if (!dialog) return;
+
+  const userName = ctx.from?.first_name ?? "Аноним";
+  const userTag = ctx.from?.username ? `@${ctx.from.username}` : "без @ника";
+  const userId = ctx.from?.id ?? 0;
+  const topicOpts = dialog.topicId !== undefined
+    ? { message_thread_id: dialog.topicId }
+    : {};
+
+  try {
+    if (ctx.message.text) {
+      const header = SUPPORT_ADMIN_HEADER(userName, userTag, userId);
+      const sent = await ctx.api.sendMessage(
+        dialog.chatId,
+        `${header}\n${ctx.message.text}`,
+        topicOpts,
+      );
+      saveForwardedMessage(dialog.chatId, sent.message_id, userChatId);
+    } else {
+      // Фото, файл, скрин оплаты и т.д. — шлём заголовок + копию медиа.
+      const header = SUPPORT_ADMIN_HEADER(userName, userTag, userId);
+      const sent = await ctx.api.sendMessage(dialog.chatId, header, topicOpts);
+      saveForwardedMessage(dialog.chatId, sent.message_id, userChatId);
+
+      const copied = await ctx.api.copyMessage(
+        dialog.chatId,
+        userChatId,
+        ctx.message.message_id,
+        topicOpts,
+      );
+      saveForwardedMessage(dialog.chatId, copied.message_id, userChatId);
+    }
+  } catch (error) {
+    console.error("Ошибка пересылки ответа юзера в админ-чат:", error);
+  }
+});
 
 // Глобальный обработчик ошибок. "message is not modified" — безобидный дабл-клик, игнорируем.
 bot.catch((err) => {

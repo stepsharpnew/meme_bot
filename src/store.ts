@@ -20,6 +20,21 @@ export function getUserChatId(
   return forwardedMessages.get(makeForwardKey(adminChatId, adminMsgId));
 }
 
+// Активные диалоги: userChatId → админ-чат, в который пересылать ответы юзера.
+const activeDialogs = new Map<number, AdminChat>();
+
+export function setActiveDialog(userChatId: number, adminChat: AdminChat): void {
+  activeDialogs.set(userChatId, adminChat);
+}
+
+export function getActiveDialog(userChatId: number): AdminChat | undefined {
+  return activeDialogs.get(userChatId);
+}
+
+export function clearActiveDialog(userChatId: number): void {
+  activeDialogs.delete(userChatId);
+}
+
 export interface AdminChat {
   chatId: string;
   topicId?: number;
