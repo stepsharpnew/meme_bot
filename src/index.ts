@@ -64,9 +64,14 @@ const adminChats = [supportAdminChatRaw, vipAdminChatRaw]
 // Админ → юзер: ответ на пересланное сообщение уходит пользователю.
 if (adminChats.length > 0) {
   bot.on("message", async (ctx, next) => {
-    const currentAdminChat = adminChats.find(
-      (ac) => ctx.chat.id.toString() === ac.chatId,
-    );
+    const chatIdStr = ctx.chat.id.toString();
+    const threadId = ctx.message.message_thread_id;
+
+    const currentAdminChat = adminChats.find((ac) => {
+      if (ac.chatId !== chatIdStr) return false;
+      if (ac.topicId !== undefined) return ac.topicId === threadId;
+      return threadId === undefined;
+    });
     if (!currentAdminChat) {
       await next();
       return;
