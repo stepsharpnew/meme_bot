@@ -9,13 +9,15 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "."
   },
   "include": [
-    "src/**/*"
+    "server/**/*",
+    "shared/**/*"
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "webapp"
   ]
 }

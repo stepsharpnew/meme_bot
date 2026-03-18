@@ -1,4 +1,4 @@
-name: CI/CD for MemeVpn Bot
+name: CI/CD for NYTREX VPN Bot
 
 on:
   push:
@@ -10,32 +10,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout кода
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Настройка Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
-      # 3. Установка зависимостей
       - name: Install dependencies
         run: npm ci
 
-      # 4. Проверка TypeScript (strict build)
-      - name: TypeScript check
-        run: npm run build
+      - name: TypeScript check (bot)
+        run: npm run bot:check
 
-      # 5. Настройка SSH
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
 
-      # 6. Установка Node.js на сервере (если не установлен)
       - name: Ensure Node.js on server
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_IP_ADDRESS }} bash << 'ENDSSH'
@@ -47,7 +41,6 @@ jobs:
             npm -v
           ENDSSH
 
-      # 7. Копирование файлов на сервер
       - name: Deploy files to server
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_IP_ADDRESS }} \
@@ -56,15 +49,15 @@ jobs:
             --exclude=".git" \
             --exclude="node_modules" \
             --exclude=".env" \
+            --exclude="webapp" \
+            --exclude=".vercel" \
             ./ ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_IP_ADDRESS }}:~/meme_bot/bot
 
-      # 8. Создаём .env на сервере из секретов GitHub
       - name: Create .env on server
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_IP_ADDRESS }} \
             "echo '${{ secrets.BOT_ENV }}' > ~/meme_bot/bot/.env"
 
-      # 9. Установка зависимостей и перезапуск бота через pm2
       - name: Restart bot on server
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_IP_ADDRESS }} bash << 'ENDSSH'
@@ -73,7 +66,6 @@ jobs:
 
             npm ci
 
-            # Глобальная установка pm2, ts-node, typescript если нет
             if ! command -v pm2 &>/dev/null; then
               sudo npm install -g pm2 ts-node typescript
               pm2 startup systemd -u $USER --hp $HOME | tail -n 1 | sudo bash
@@ -81,7 +73,7 @@ jobs:
 
             pm2 stop meme-bot 2>/dev/null || true
             pm2 delete meme-bot 2>/dev/null || true
-            pm2 start "npx ts-node src/index.ts" \
+            pm2 start "npx ts-node server/index.ts" \
               --name meme-bot \
               --restart-delay=5000 \
               --max-restarts=10

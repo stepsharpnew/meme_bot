@@ -1,0 +1,41 @@
+.card {
+  background: var(--bg-card);
+  border-radius: var(--border-radius);
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.value {
+  font-size: 13px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
+  margin: 12px 0;
+}
+
+.totalLabel {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.totalValue {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--accent-blue);
+}
