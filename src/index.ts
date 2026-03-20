@@ -24,7 +24,11 @@ if (!botToken) {
   throw new Error("BOT_TOKEN is not set");
 }
 
-const bot = new Bot<MemeContext>(botToken);
+const bot = new Bot<MemeContext>(botToken, {
+  client: {
+    timeoutSeconds: 60,
+  },
+});
 
 // Инициализация сессии (in-memory для разработки).
 const initialSession = (): SessionData => ({
@@ -160,6 +164,7 @@ bot.catch((err) => {
   console.error("Бот словил ошибку:", err.error);
 });
 
-// Запуск long polling.
-bot.start();
-console.log("MemeVpn запущен и готов к мемам 🚀");
+bot.start({
+  drop_pending_updates: true,
+  onStart: () => console.log("MemeVpn запущен и готов к мемам 🚀"),
+});
