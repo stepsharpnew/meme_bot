@@ -1,4 +1,4 @@
-name: CI/CD for NYTREX VPN Bot
+name: CI/CD for MEME VPN Bot
 
 on:
   push:

@@ -1,4 +1,4 @@
-export const BRAND_NAME = 'NYTREX VPN';
+export const BRAND_NAME = 'MEME VPN';
 
 export const SUPPORT_BOT_USERNAME = 'YOUR_SUPPORT_BOT';
 

@@ -1,5 +1,14 @@
 import "dotenv/config";
 import { Bot, GrammyError, InlineKeyboard, session } from "grammy";
+import { type WebAppPayload } from "../shared/plans";
+import {
+  BRAND_NAME,
+  PURCHASE_ADMIN_TEXT,
+  SUPPORT_ADMIN_HEADER,
+  SUPPORT_FROM_WEBAPP_ADMIN_TEXT,
+  SUPPORT_REPLY_FAILED,
+  SUPPORT_REPLY_PREFIX,
+} from "../shared/texts";
 import {
   clearActiveDialog,
   getActiveDialog,
@@ -9,21 +18,13 @@ import {
   setActiveDialog,
 } from "./store";
 import { type MemeContext, type SessionData } from "./types";
-import { type WebAppPayload } from "../shared/plans";
-import {
-  BRAND_NAME,
-  PURCHASE_ADMIN_TEXT,
-  SUPPORT_FROM_WEBAPP_ADMIN_TEXT,
-  SUPPORT_ADMIN_HEADER,
-  SUPPORT_REPLY_PREFIX,
-  SUPPORT_REPLY_FAILED,
-} from "../shared/texts";
 
 const botToken = process.env.BOT_TOKEN;
 if (!botToken) throw new Error("BOT_TOKEN is not set");
 
 const webappUrl = process.env.WEBAPP_URL ?? "";
-if (!webappUrl) console.warn("⚠️ WEBAPP_URL не задан — кнопка Mini App не будет работать");
+if (!webappUrl)
+  console.warn("⚠️ WEBAPP_URL не задан — кнопка Mini App не будет работать");
 
 const bot = new Bot<MemeContext>(botToken);
 
@@ -34,7 +35,10 @@ bot.use(session({ initial: initialSession }));
 bot.command("start", async (ctx) => {
   if (ctx.chat) clearActiveDialog(ctx.chat.id);
 
-  const keyboard = new InlineKeyboard().webApp(`🚀 Открыть ${BRAND_NAME}`, webappUrl);
+  const keyboard = new InlineKeyboard().webApp(
+    `🚀 Открыть ${BRAND_NAME}`,
+    webappUrl,
+  );
 
   await ctx.reply(
     `👋 Добро пожаловать в ${BRAND_NAME}!\n\nЗдесь ты можешь:\n• Оформить подписку на VPN\n• Посмотреть инструкции по настройке\n• Связаться с поддержкой\n\nНажми кнопку ниже 👇`,
@@ -48,7 +52,10 @@ bot.on("message:web_app_data", async (ctx) => {
   try {
     payload = JSON.parse(ctx.message.web_app_data.data) as WebAppPayload;
   } catch {
-    console.error("Невалидный JSON из Mini App:", ctx.message.web_app_data.data);
+    console.error(
+      "Невалидный JSON из Mini App:",
+      ctx.message.web_app_data.data,
+    );
     return;
   }
 
@@ -66,8 +73,12 @@ bot.on("message:web_app_data", async (ctx) => {
 
     const { chatId, topicId } = resolveAdminChat(rawBuyChat);
     const adminText = PURCHASE_ADMIN_TEXT(
-      userName, userTag, userId,
-      payload.planName, payload.months, payload.total,
+      userName,
+      userTag,
+      userId,
+      payload.planName,
+      payload.months,
+      payload.total,
     );
 
     try {
@@ -94,7 +105,10 @@ bot.on("message:web_app_data", async (ctx) => {
 
     const { chatId, topicId } = resolveAdminChat(rawSupportChat);
     const adminText = SUPPORT_FROM_WEBAPP_ADMIN_TEXT(
-      userName, userTag, userId, payload.message,
+      userName,
+      userTag,
+      userId,
+      payload.message,
     );
 
     try {
@@ -105,7 +119,9 @@ bot.on("message:web_app_data", async (ctx) => {
         saveForwardedMessage(chatId, sent.message_id, userChatId);
         setActiveDialog(userChatId, { chatId, topicId });
       }
-      await ctx.reply("✅ Сообщение отправлено в поддержку! Менеджер скоро ответит.");
+      await ctx.reply(
+        "✅ Сообщение отправлено в поддержку! Менеджер скоро ответит.",
+      );
     } catch (error) {
       console.error("Ошибка отправки поддержки из Mini App:", error);
       await ctx.reply("⚠️ Не удалось отправить сообщение. Попробуй позже.");
@@ -136,7 +152,10 @@ if (adminChats.length > 0) {
     const repliedTo = ctx.message.reply_to_message;
     if (!repliedTo) return next();
 
-    const replyUserChatId = getUserChatId(currentAdminChat.chatId, repliedTo.message_id);
+    const replyUserChatId = getUserChatId(
+      currentAdminChat.chatId,
+      repliedTo.message_id,
+    );
     if (!replyUserChatId) return next();
 
     setActiveDialog(replyUserChatId, currentAdminChat);
@@ -146,7 +165,11 @@ if (adminChats.length > 0) {
         await ctx.api.sendMessage(replyUserChatId, ctx.message.text);
       } else {
         await ctx.api.sendMessage(replyUserChatId, SUPPORT_REPLY_PREFIX);
-        await ctx.api.copyMessage(replyUserChatId, ctx.chat.id, ctx.message.message_id);
+        await ctx.api.copyMessage(
+          replyUserChatId,
+          ctx.chat.id,
+          ctx.message.message_id,
+        );
       }
     } catch (error) {
       console.error("Ошибка отправки ответа юзеру:", error);
@@ -164,9 +187,8 @@ bot.on("message", async (ctx) => {
   const userName = ctx.from?.first_name ?? "Аноним";
   const userTag = ctx.from?.username ? `@${ctx.from.username}` : "без @ника";
   const userId = ctx.from?.id ?? 0;
-  const topicOpts = dialog.topicId !== undefined
-    ? { message_thread_id: dialog.topicId }
-    : {};
+  const topicOpts =
+    dialog.topicId !== undefined ? { message_thread_id: dialog.topicId } : {};
 
   try {
     if (ctx.message.text) {
